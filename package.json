@@ -1,0 +1,22 @@
+{
+  "name": "xml-sitemap-validator",
+  "version": "1.0.0",
+  "description": "XML Sitemap Validator - Validate sitemap structure and URL patterns",
+  "main": "public/xml-validator.js",
+  "scripts": {
+    "dev": "npx serve public -p 3000",
+    "start": "npx serve public -p 3000"
+  },
+  "keywords": [
+    "xml",
+    "sitemap",
+    "validator",
+    "url-validation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}
+
