@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: #e2e5ea;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: #555;
+    transition: all 0.25s ease;
+  }
+
+  .tab-btn.active { background: #fff; color: #1a1a2e; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+  .tab-btn[data-tab="Consume"].active { color: #16a34a; }
+  .tab-btn[data-tab="Reduce"].active  { color: #d97706; }
+  .tab-btn[data-tab="Avoid"].active   { color: #dc2626; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 99px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .tab-btn[data-tab="Consume"] .badge { background: #dcfce7; color: #16a34a; }
+  .tab-btn[data-tab="Reduce"] .badge  { background: #fef3c7; color: #d97706; }
+  .tab-btn[data-tab="Avoid"] .badge   { background: #fee2e2; color: #dc2626; }
+
+  .search-box {
+    width: 100%;
+    padding: 12px 16px 12px 42px;
+    border: 1.5px solid #ddd;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='5.5'/%3E%3Cline x1='12.5' y1='12.5' x2='16' y2='16'/%3E%3C/svg%3E") 14px center no-repeat;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus { border-color: #6366f1; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-left: 4px solid transparent;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+  .card.consume { border-left-color: #22c55e; }
+  .card.reduce  { border-left-color: #f59e0b; }
+  .card.avoid   { border-left-color: #ef4444; }
+
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .consume .dot { background: #22c55e; }
+  .reduce  .dot { background: #f59e0b; }
+  .avoid   .dot { background: #ef4444; }
+
+  .card-text { min-width: 0; }
+  .card-en { font-weight: 600; font-size: 0.95rem; }
+  .card-hi { font-size: 0.82rem; color: #777; margin-top: 2px; }
+
+  .empty {
+    text-align: center;
+    padding: 48px 16px;
+    color: #999;
+    font-size: 0.95rem;
+    grid-column: 1 / -1;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Food Guide</h1>
+
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="Consume" role="tab">Consume<span class="badge" id="badge-Consume"></span></button>
+    <button class="tab-btn" data-tab="Reduce" role="tab">Reduce<span class="badge" id="badge-Reduce"></span></button>
+    <button class="tab-btn" data-tab="Avoid" role="tab">Avoid<span class="badge" id="badge-Avoid"></span></button>
+  </div>
+
+  <input class="search-box" type="text" placeholder="Search foods..." id="search" autocomplete="off">
+
+  <div class="tab-panel active" id="panel-Consume"><div class="grid" id="grid-Consume"></div></div>
+  <div class="tab-panel" id="panel-Reduce"><div class="grid" id="grid-Reduce"></div></div>
+  <div class="tab-panel" id="panel-Avoid"><div class="grid" id="grid-Avoid"></div></div>
+</div>
+
+<script>
+const DATA={"Consume":[{"english":"Aubergine","hindi":"बैंगन"},{"english":"Asparagus","hindi":"शतावरी"},{"english":"Avocado","hindi":"एवोकाडो"},{"english":"Apple","hindi":"सेब"},{"english":"Apricot","hindi":"खुबानी"},{"english":"Artichoke","hindi":"आर्टिचोक"},{"english":"Banana","hindi":"केला"},{"english":"Basil","hindi":"तुलसी"},{"english":"Bayleaf","hindi":"तेजपत्ता"},{"english":"Beetroot","hindi":"चुकंदर"},{"english":"Black Berry","hindi":"ब्लैकबेरी"},{"english":"Blackcurrant","hindi":"ब्लैककरंट"},{"english":"Blue Berry","hindi":"ब्लूबेरी"},{"english":"Broccoli Sprout","hindi":"ब्रोकोली स्प्राउट"},{"english":"Buckwheat","hindi":"कुट्टू"},{"english":"Cabbage (Red)","hindi":"लाल गोभी"},{"english":"Camomila","hindi":"कैमोमाइल"},{"english":"Caper","hindi":"कैपर"},{"english":"Carrot","hindi":"गाजर"},{"english":"Celeriac","hindi":"सेलेरियाक"},{"english":"Chard","hindi":"चर्ड"},{"english":"Chestnut","hindi":"शाहबलूत"},{"english":"Chicory","hindi":"चिकोरी"},{"english":"Chilli Red","hindi":"लाल मिर्च"},{"english":"Cinnamon","hindi":"दालचीनी"},{"english":"Clove","hindi":"लौंग"},{"english":"Cocoa bean","hindi":"कोकोआ बीन"},{"english":"Coffee","hindi":"कॉफी"},{"english":"Coriander (Leaf)","hindi":"धनिया (पत्ता)"},{"english":"Cranberry","hindi":"क्रैनबेरी"},{"english":"Cucumber","hindi":"खीरा"},{"english":"Date","hindi":"खजूर"},{"english":"Fennel Leaf","hindi":"सौंफ का पत्ता"},{"english":"Fig","hindi":"अंजीर"},{"english":"Garlic","hindi":"लहसुन"},{"english":"Ginger (no reduce)","hindi":"अदरक (बिना कम करें)"},{"english":"Ginseng","hindi":"जिंसेंग"},{"english":"Grape Fruit","hindi":"अंगूर फल"},{"english":"Guava","hindi":"अमरूद"},{"english":"Honey","hindi":"शहद"},{"english":"Hops","hindi":"हॉप्स"},{"english":"Horseradish","hindi":"हॉर्सरैडिश"},{"english":"Kiwi","hindi":"कीवी"},{"english":"Leek (no reduce)","hindi":"लीक (बिना कम करें)"},{"english":"Lemon","hindi":"नींबू"},{"english":"Lettuce","hindi":"लेट्यूस"},{"english":"Liquorice","hindi":"मुलेठी"},{"english":"Lychee","hindi":"लीची"},{"english":"Macedonia Nut","hindi":"मेसिडोनिया नट"},{"english":"Mango","hindi":"आम"},{"english":"Marjoram","hindi":"मार्जोरम"},{"english":"Millet","hindi":"बाजरा"},{"english":"Mint","hindi":"पुदीना"},{"english":"Mulberry","hindi":"शहतूत"},{"english":"Mustard Seed","hindi":"सरसों के बीज"},{"english":"Nectarine","hindi":"नेक्टरीन"},{"english":"Nut","hindi":"नट"},{"english":"Nutmeg","hindi":"जायफल"},{"english":"Olive","hindi":"जैतून"},{"english":"Onion","hindi":"प्याज"},{"english":"Parsley","hindi":"अजमोद"},{"english":"Peach","hindi":"आड़ू"},{"english":"Pear","hindi":"नाशपाती"},{"english":"Peppermint","hindi":"पेपरमिंट"},{"english":"Pine Nut","hindi":"पाइन नट"},{"english":"Pineapple","hindi":"अनानास"},{"english":"Pistachio","hindi":"पिस्ता"},{"english":"Polenta","hindi":"पोलेंटा"},{"english":"Quinoa","hindi":"क्विनोआ"},{"english":"Raisin","hindi":"किशमिश"},{"english":"Rapeseed","hindi":"रैपसीड"},{"english":"Raspberry","hindi":"रसभरी"},{"english":"Rhubarb","hindi":"रूबर्ब"},{"english":"Rocket (no reduce)","hindi":"रॉकेट (बिना कम करें)"},{"english":"Rosemary","hindi":"रोज़मेरी"},{"english":"Rye","hindi":"राई"},{"english":"Saffron","hindi":"केसर"},{"english":"Sage","hindi":"सेज"},{"english":"Shallot","hindi":"शालोट"},{"english":"Spinach","hindi":"पालक"},{"english":"Strawberry","hindi":"स्ट्रॉबेरी"},{"english":"Tangerine","hindi":"संतरा"},{"english":"Tapioca","hindi":"टैपिओका"},{"english":"Tea (Green)","hindi":"चाय (ग्रीन)"},{"english":"Tomato","hindi":"टमाटर"},{"english":"Turmeric","hindi":"हल्दी"},{"english":"Vanilla","hindi":"वेनिला"},{"english":"Walnut","hindi":"अखरोट"},{"english":"Watermelon","hindi":"तरबूज"}],"Reduce":[{"english":"Broccoli","hindi":"ब्रोकोली"},{"english":"Cayenne","hindi":"लाल मिर्च"},{"english":"Clover","hindi":"क्लोवर"},{"english":"Ginger","hindi":"अदरक"},{"english":"Lime","hindi":"नींबू"},{"english":"Marrow","hindi":"कद्दू"},{"english":"Papaya","hindi":"पपीता"},{"english":"Rocket","hindi":"रॉकेट"},{"english":"Sweet Potato","hindi":"शकरकंद"},{"english":"Tarragon","hindi":"टैरेगॉन"},{"english":"Thyme","hindi":"थाइम"},{"english":"Watercress","hindi":"वाटरक्रेस"},{"english":"Yuca","hindi":"यूका"},{"english":"Cane Sugar","hindi":"गन्ना चीनी"},{"english":"Cola Nut","hindi":"कोला नट"},{"english":"Triangularum","hindi":"ट्रायंगुलरम"},{"english":"Beta Lactoglobulin","hindi":"बीटा लैक्टोग्लोबुलिन"}],"Avoid":[{"english":"Aga Agar","hindi":"आगा आगर"},{"english":"Aloe Vera","hindi":"एलोवेरा"},{"english":"Almond","hindi":"बादाम"},{"english":"Amaranth","hindi":"चौलाई"},{"english":"Artichoke","hindi":"आर्टिचोक"},{"english":"Barley","hindi":"जौ"},{"english":"Bean (Broad)","hindi":"बीन (ब्रॉड)"},{"english":"Bean (Red Kidney)","hindi":"राजमा"},{"english":"Bean (White Haricot)","hindi":"सफेद बीन्स"},{"english":"Brazil Nut","hindi":"ब्राजील नट"},{"english":"Cabbage (White)","hindi":"सफेद गोभी"},{"english":"Cashew Nut","hindi":"काजू"},{"english":"Celery","hindi":"अजवाइन"},{"english":"Chickpea","hindi":"चना"},{"english":"Coconut","hindi":"नारियल"},{"english":"Cola Nut","hindi":"कोला नट"},{"english":"Corn (Maize)","hindi":"मक्का (मेज)"},{"english":"Couscous","hindi":"कूसकूस"},{"english":"Cumin","hindi":"जीरा"},{"english":"Dill","hindi":"सोआ"},{"english":"Durum Wheat","hindi":"ड्यूरम गेहूं"},{"english":"Flax Seed","hindi":"अलसी के बीज"},{"english":"Ginkgo","hindi":"जिंको"},{"english":"Gluten","hindi":"ग्लूटेन"},{"english":"Hazelnut","hindi":"हेजलनट"},{"english":"Lentil","hindi":"मसूर दाल"},{"english":"Mushroom","hindi":"मशरूम"},{"english":"Oat","hindi":"जई"},{"english":"Orange","hindi":"संतरा"},{"english":"Parsnip","hindi":"पार्सनिप"},{"english":"Peanut","hindi":"मूंगफली"},{"english":"Pistachio","hindi":"पिस्ता"},{"english":"Potato","hindi":"आलू"},{"english":"Radish","hindi":"मूली"},{"english":"Rice","hindi":"चावल"},{"english":"Sesame Seed","hindi":"तिल के बीज"},{"english":"Soya Bean","hindi":"सोया बीन"},{"english":"Spelt","hindi":"स्पेल्ट"},{"english":"Sunflower Seed","hindi":"सूरजमुखी के बीज"},{"english":"Tapioca","hindi":"टैपिओका"},{"english":"Wheat","hindi":"गेहूं"},{"english":"Yeast (Baker's)","hindi":"यीस्ट (बेकर)"},{"english":"Yeast (Brewer's)","hindi":"यीस्ट (ब्रूअर)"},{"english":"Alpha Lactalbumin","hindi":"अल्फा लैक्टाल्बुमिन"},{"english":"Casein","hindi":"केसीन"},{"english":"Egg White","hindi":"अंडे का सफेद भाग"},{"english":"Egg Yolk (excluded)","hindi":"अंडे की जर्दी (एक्सक्लूडेड)"},{"english":"Milk (Goat)","hindi":"बकरी का दूध"},{"english":"Milk (Sheep)","hindi":"भेड़ का दूध"}]};
+
+let activeTab = "Consume";
+
+function render(tab, query = "") {
+  const q = query.toLowerCase();
+  const items = DATA[tab].filter(i => !q || i.english.toLowerCase().includes(q) || i.hindi.includes(q));
+  const cls = tab.toLowerCase();
+  const grid = document.getElementById("grid-" + tab);
+
+  if (!items.length) {
+    grid.innerHTML = '<div class="empty">No items match your search.</div>';
+  } else {
+    grid.innerHTML = items.map(i =>
+      `<div class="card ${cls}"><span class="dot"></span><div class="card-text"><div class="card-en">${i.english}</div><div class="card-hi">${i.hindi}</div></div></div>`
+    ).join("");
+  }
+
+  document.getElementById("badge-" + tab).textContent = items.length;
+}
+
+function setTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + tab));
+  renderAll();
+}
+
+function renderAll() {
+  const q = document.getElementById("search").value;
+  ["Consume", "Reduce", "Avoid"].forEach(t => render(t, q));
+}
+
+document.querySelectorAll(".tab-btn").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+document.getElementById("search").addEventListener("input", renderAll);
+
+renderAll();
+</script>
+</body>
+</html>
